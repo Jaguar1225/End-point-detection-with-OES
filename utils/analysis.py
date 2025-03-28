@@ -1,4 +1,5 @@
 import numpy as np
+import platform
 from preprocess import Normalize, WavelengthSelection, NoiseFilter
 from clustering import SC, GMM, KMC
 from .plot.plotter import Plotter
@@ -28,11 +29,14 @@ class Analysis(KMC,GMM, SC, Normalize, WavelengthSelection, NoiseFilter):
         self.data = {}
         pbar = tqdm(glob(f"{data_path}/*.csv"), desc="Loading data",leave=False)
         for file_path in pbar:
-            file_name = file_path.split("/")[-1].split(".")[0]
+            if platform.system() == "Windows":
+                file_name = file_path.split("\\")[-1].split(".")[0]
+            else:
+                file_name = file_path.split("/")[-1].split(".")[0]
             temp_load = np.loadtxt(file_path,delimiter=',',dtype=str)
             start_idx = np.where(temp_load[:,0] == "DATE")[0][0]
             self.data[file_name] = {}
-            self.data[file_name]["time"] = temp_load[start_idx+1:,0]
+            self.data[file_name]["time"] = temp_load[start_idx+1:,0].astype(np.datetime64)
             self.data[file_name]["eeprom"] = temp_load[start_idx,26:].astype(np.float32)
             self.data[file_name]["ees"] = temp_load[start_idx+1:,1:26].astype(np.float32)
             self.data[file_name]["oes"] = temp_load[start_idx+1:,26:].astype(np.float32)
@@ -40,15 +44,22 @@ class Analysis(KMC,GMM, SC, Normalize, WavelengthSelection, NoiseFilter):
     def analysis(self) -> None:
         pbar = tqdm(self.data.items(), desc="Processing",leave=False)
         for file_name, file_data in pbar:
-            oes_selected = self.selection(file_data["eeprom"],file_data["oes"])
+            start_idx = np.where(file_data["ees"][:,1]>0)[0][0]
+            end_idx = np.where(file_data["ees"][:,1]>0)[0][-1]
+
+            process_time = file_data["time"][start_idx:end_idx]
+
+            oes_selected = self.selection(file_data["eeprom"],file_data["oes"][start_idx:end_idx])
             oes_normalized = self.normalize(oes_selected)
             oes_denoised = self.filter(oes_normalized)
+            
+            
 
             self.model_map[self.params["model_name"].lower()].__init__(self, self.window_size, oes_denoised.shape[-1])
 
             validity_score = []
 
-            pbar_time = tqdm(range(len(file_data["time"])-self.window_size), desc="Processing",leave=False)
+            pbar_time = tqdm(range(len(process_time)), desc="Processing",leave=False)
             for i in pbar_time:
                 self.window_update(oes_denoised[i:i+1])
                 if i<self.window_size:
@@ -57,9 +68,9 @@ class Analysis(KMC,GMM, SC, Normalize, WavelengthSelection, NoiseFilter):
         
             plotter = Plotter()
             plotter.plot_line(
-                file_data["time"][self.window_size:], 
+                process_time[self.window_size:], 
                 validity_score, 
-                title="Validity Score", 
+                title=f"{file_name} Validity Score", 
                 xlabel="Time", 
                 ylabel="Validity Score",
                 save_name=f"{file_name}.png"

@@ -14,6 +14,7 @@ class PlotStyle:
         plt.rcParams['font.size'] = 25
         plt.rcParams['axes.titlesize'] = 30
         plt.rcParams['axes.labelsize'] = 25
+        plt.rcParams['axes.titleweight'] = 'bold'
         
         # 그리드 설정
         plt.rcParams['grid.linestyle'] = '--'
@@ -28,6 +29,7 @@ class PlotStyle:
         plt.rcParams['ytick.major.width'] = 3.0
         plt.rcParams['xtick.minor.width'] = 3.0
         plt.rcParams['ytick.minor.width'] = 3.0
+
         
         # 여백 설정
         plt.rcParams['figure.autolayout'] = True

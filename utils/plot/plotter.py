@@ -38,7 +38,7 @@ class Plotter:
             save_name (Optional[str]): 저장 파일명
             dpi (int): 저장 해상도
         """
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=(16, 12))
         plt.imshow(data, aspect='auto', cmap='RdBu_r')
         plt.colorbar()
         plt.title(title)
@@ -81,14 +81,15 @@ class Plotter:
         """
         plt.figure(figsize=(8, 6))
 
-        if x == list:
+        if isinstance(x, list):
             x = np.array(x).T
-            if len(x.shape) == 1:
-                x = x[:,np.newaxis]
-        if y == list:
+        if len(x.shape) == 1:
+            x = x[:,np.newaxis]
+                
+        if isinstance(y, list):
             y = np.array(y).T
-            if len(y.shape) == 1:
-                y = y[:,np.newaxis]
+        if len(y.shape) == 1:
+            y = y[:,np.newaxis]
         
         if color is None:
             color = self.colors[0:x.shape[-1]]  # 단일 색상으로 수정
@@ -106,7 +107,9 @@ class Plotter:
         plt.title(title, pad=15)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        
+
+        plt.ylim(0.5, 1.2)
+
         if grid:
             plt.grid(True, linestyle='--', alpha=0.3)
             
@@ -114,8 +117,7 @@ class Plotter:
             plt.legend()
             
         plt.tight_layout()
-        PlotStyle.set_style()
-        
+
         if save_name:
             save_path = os.path.join(self.save_dir, save_name)
             plt.savefig(save_path, bbox_inches='tight', dpi=dpi)
@@ -150,10 +152,16 @@ class Plotter:
             dpi: 해상도
         """
 
-        if x is list:
+        if isinstance(x, list):
             x = np.array(x).T
-        if y is list:
+        if len(x.shape) == 1:
+            x = x[:,np.newaxis]
+                
+        if isinstance(y, list):
             y = np.array(y).T
+        if len(y.shape) == 1:
+            y = y[:,np.newaxis]
+
         plt.figure(figsize=(8, 6))
         
         if color is None:
@@ -177,7 +185,6 @@ class Plotter:
             plt.legend()
             
         plt.tight_layout()
-        PlotStyle.set_style()
         
         if save_name:
             save_path = os.path.join(self.save_dir, save_name)
@@ -235,7 +242,6 @@ class Plotter:
             
         plt.legend()
         plt.tight_layout()
-        PlotStyle.set_style()
 
         if save_name:
             save_path = os.path.join(self.save_dir, save_name)
