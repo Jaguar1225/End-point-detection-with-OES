@@ -1,6 +1,7 @@
 import numpy as np
 
 class ChannelList:
+
     Oxide = {
           'C': [283.7212, 425.9647, 731.2324],
           'CF': [240.075, 247.4, 255.8],
@@ -20,6 +21,7 @@ class ChannelList:
           'Ar': [434.8878, 476.5331, 488.1023, 696.494, 707.0223, 738.4344, 750.4483, 751.5, 763.6781, 772.3453, 
                  794.7625, 811.4175]
           }
+    
     SiN = {
         'C': [282.6224, 426.1933, 733.3925],
         'CF': [240.5082, 247.4495, 255.4961],
@@ -42,9 +44,9 @@ class ChannelList:
 
     
 class WavelengthSelection:
-    def __init__(self, target, search_range=0.3):
-        self.target = target
-        self.search_range = search_range
+    def __init__(self, **params):
+        self.target = params["target"]
+        self.search_range = params["search_range"]
 
     def selection(self, data):
         m = True
