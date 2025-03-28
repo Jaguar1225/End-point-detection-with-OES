@@ -48,14 +48,15 @@ class WavelengthSelection:
         self.target = params["target"]
         self.search_range = params["search_range"]
 
-    def selection(self, data):
+    def selection(self, eeprom, data):
         m = True
-        for byproducts in ChannelList[self.target]:
+        for target_name in self.target:
+            byproducts = getattr(ChannelList, target_name)
             for byproduct, wavelengths in byproducts.items():
                 for wavelength in wavelengths:
-                    idx = np.where(np.abs(data[0,:]-wavelength) < self.search_range)[0]
+                    idx = np.where(np.abs(eeprom-wavelength) < self.search_range)[0]
                     try:
-                        MaxIdx = idx[np.argmax(data[1:, idx].mean(axis=0))]
+                        MaxIdx = idx[np.argmax(data[:, idx].mean(axis=0))]
                         if m:
                             WData = data[:, MaxIdx]
                             m = False

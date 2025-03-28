@@ -1,13 +1,14 @@
 import numpy as np
-from ..preprocess import Normalize, WavelengthSelection, NoiseFilter
-from ..clustering import SC, GMM, KMC
+from preprocess import Normalize, WavelengthSelection, NoiseFilter
+from clustering import SC, GMM, KMC
 from .plot.plotter import Plotter
 from glob import glob
+from tqdm import tqdm
 
 class Analysis(KMC,GMM, SC, Normalize, WavelengthSelection, NoiseFilter):
     def __init__(self, **params):
-
-        model_map = {
+        self.params = params
+        self.model_map = {
             "kmc": KMC,
             "gmm": GMM,
             "sc": SC
@@ -17,7 +18,7 @@ class Analysis(KMC,GMM, SC, Normalize, WavelengthSelection, NoiseFilter):
 
         self.data_loader(params["data_path"])
 
-        model_map[params["model_name"]].__init__(self.window_size, self.num_channels)
+        
 
         Normalize.__init__(self, **params)
         WavelengthSelection.__init__(self, **params)
@@ -25,27 +26,34 @@ class Analysis(KMC,GMM, SC, Normalize, WavelengthSelection, NoiseFilter):
 
     def data_loader(self, data_path: str) -> None:
         self.data = {}
-        for file_path in glob(f"{data_path}/*.csv"):
+        pbar = tqdm(glob(f"{data_path}/*.csv"), desc="Loading data",leave=False)
+        for file_path in pbar:
             file_name = file_path.split("/")[-1].split(".")[0]
-            temp_load = np.loadtxt(file_path,delimiter=',',dtype=object)
+            temp_load = np.loadtxt(file_path,delimiter=',',dtype=str)
+            start_idx = np.where(temp_load[:,0] == "DATE")[0][0]
             self.data[file_name] = {}
-            self.data[file_name]["time"] = temp_load[:,0]
-            self.data[file_name]["ees"] = temp_load[1:,:25].astype(np.float32)
-            self.data[file_name]["oes"] = temp_load[1:,25:].astype(np.float32)
+            self.data[file_name]["time"] = temp_load[start_idx+1:,0]
+            self.data[file_name]["eeprom"] = temp_load[start_idx,26:].astype(np.float32)
+            self.data[file_name]["ees"] = temp_load[start_idx+1:,1:26].astype(np.float32)
+            self.data[file_name]["oes"] = temp_load[start_idx+1:,26:].astype(np.float32)
     
     def analysis(self) -> None:
-        for file_name, file_data in self.data.items():
-            oes_selected = self.wavelength_selection(file_data["oes"])
+        pbar = tqdm(self.data.items(), desc="Processing",leave=False)
+        for file_name, file_data in pbar:
+            oes_selected = self.selection(file_data["eeprom"],file_data["oes"])
             oes_normalized = self.normalize(oes_selected)
-            oes_denoised = self.denoise(oes_normalized)
+            oes_denoised = self.filter(oes_normalized)
+
+            self.model_map[self.params["model_name"].lower()].__init__(self, self.window_size, oes_denoised.shape[-1])
 
             validity_score = []
 
-            for i in range(len(file_data["time"])-self.window_size):
-                self.window_update(oes_denoised[i])
+            pbar_time = tqdm(range(len(file_data["time"])-self.window_size), desc="Processing",leave=False)
+            for i in pbar_time:
+                self.window_update(oes_denoised[i:i+1])
                 if i<self.window_size:
                     continue
-                validity_score.append(self.validity_score())
+                validity_score.append(self())
         
             plotter = Plotter()
             plotter.plot_line(

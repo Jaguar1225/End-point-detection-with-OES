@@ -12,10 +12,10 @@ class Normalize:
         return self.normalize_fn(data)
     
     def minmax(self, data):
-        return (data - self.min) / (self.max - self.min)
+        return (data - data.min(axis=0, keepdims=True)) / (data.max(axis=0, keepdims=True) - data.min(axis=0, keepdims=True))
 
     def standard(self, data):
-        return (data - self.mean) / self.std
+        return (data - data.mean(axis=0, keepdims=True)) / data.std(axis=0, keepdims=True)
     
 
 

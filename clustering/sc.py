@@ -1,5 +1,5 @@
 import numpy as np
-from window import Window
+from .window import Window
 
 '''
 S. Lee, H. Choi, J. Kim, H. Chae, Plasma. Process. Polym. 20(6) (2023)
@@ -8,8 +8,11 @@ doi: 10.1002/ppap.202200238
 '''
 
 class SC(Window):
-    def __init__(self, window_size):
-        super().__init__(window_size)
+    def __init__(self, window_size, num_channels):
+        super().__init__(window_size, num_channels)
+
+    def __call__(self):
+        return self.forward()
 
     def forward(self):
         distance_matrix = self.distance_matrix(self.window)

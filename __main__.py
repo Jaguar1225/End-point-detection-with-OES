@@ -38,10 +38,11 @@ def get_params(params, args):
 def main():
     parser = argparse.ArgumentParser(description="OriginLab 데이터 분석 프로그램")
 
-    parser.add_argument("--data_path", type=str, default="data.csv", help="데이터 파일 경로")
-    parser.add_argument("--model_name", type=str, default="KMC", help="모델 이름")
-    parser.add_argument("--window_size", type=int, default=10, help="윈도우 크기")
-    parser.add_argument("--num_channels", type=int, default=25, help="채널 수")
+    parser.add_argument("--data_path", type=str, help="데이터 파일 경로")
+    parser.add_argument("--model_name", type=str, help="모델 이름")
+    parser.add_argument("--window_size", type=int, help="윈도우 크기")
+    parser.add_argument("--num_channels", type=int, help="채널 수")
+    parser.add_argument("--save_dir", type=str, help="저장 디렉토리")
 
     args = parser.parse_args()
 
@@ -54,8 +55,6 @@ def main():
     
     except Exception as e:
         print(e)
-    
-    
 
 if __name__ == "__main__":
     main()

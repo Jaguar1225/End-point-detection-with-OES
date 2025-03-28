@@ -15,7 +15,11 @@ class Plotter:
         """
         self.save_dir = f'plots/{save_dir}'
         os.makedirs(self.save_dir, exist_ok=True)
+        self.colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+        self.markers = ['o', 's', 'D', 'P', '*', 'X', 'd']
+        self.linestyles = ['-', '--', '-.', ':']
             
+
     def plot_heatmap(self,
                     data: Union[List, np.ndarray],
                     title: str = '',
@@ -77,10 +81,14 @@ class Plotter:
         """
         plt.figure(figsize=(8, 6))
 
-        if x is list:
+        if x == list:
             x = np.array(x).T
-        if y is list:
+            if len(x.shape) == 1:
+                x = x[:,np.newaxis]
+        if y == list:
             y = np.array(y).T
+            if len(y.shape) == 1:
+                y = y[:,np.newaxis]
         
         if color is None:
             color = self.colors[0:x.shape[-1]]  # 단일 색상으로 수정
@@ -92,7 +100,7 @@ class Plotter:
             label = [f'{i}' for i in range(x.shape[-1])]
         
         for i in range(x.shape[-1]):
-            plt.plot(x[i], y[i], color=color[i], marker=marker[i], linestyle=linestyle[i], 
+            plt.plot(x[:,i], y[:,i], color=color[i], marker=marker[i], linestyle=linestyle[i], 
                 label=label[i], linewidth=2.5, markersize=6)
                 
         plt.title(title, pad=15)

@@ -14,16 +14,15 @@ class NoiseFilter:
 
     def lowpass(self, data, threshold=0.0003, wavelet="coif17", DWT_level=1):
         coeff = pywt.wavedec2(data, wavelet, mode="sym", level=DWT_level)
-        coeff_len = len(coeff)
 
-        for i in range(1, coeff_len):
+        for i in range(1, len(coeff)):
             coeff_layer_list = list(coeff[i])
             coeff_layer_list_shape = coeff_layer_list[1].shape
             coeff_layer_list[1] = np.ones(coeff_layer_list_shape)
             coeff[i] = tuple(coeff_layer_list)
 
-        OES_data = np.r_[OES_data[0:1], pywt.waverec2(coeff, wavelet, mode="sym")[:,:OES_data.shape[1]]]
-        return OES_data
+        data = pywt.waverec2(coeff, wavelet, mode="sym")[:,:data.shape[1]]
+        return data
     
     def moving_average(self, data, window=3):
         return np.convolve(data, np.ones(window)/window, mode="valid")
