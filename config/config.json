@@ -1,0 +1,7 @@
+{
+    "data_path": "data/data.csv",
+    "term": 10,
+    "window": 10,
+    "target":["SiN"],
+    "search_range":0.3
+}
