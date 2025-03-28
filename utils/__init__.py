@@ -1,5 +1,5 @@
-from .dataloader import DataLoader
+from .analysis import Analysis
 from .plot import Plot
 from .snr import SNR_Calculator
 
-__all__ = ["DataLoader", "Plot", "SNR_Calculator"]
+__all__ = ["Analysis", "Plot", "SNR_Calculator"]
